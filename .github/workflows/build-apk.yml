@@ -38,15 +38,22 @@ jobs:
 
       - run: flutter pub get
       - run: flutter test
+      # Protsessor turiga qarab alohida, kichikroq APK'lar va hammasiga mos umumiy APK
+      - run: flutter build apk --release --split-per-abi
       - run: flutter build apk --release
 
-      - name: APK nomini o'zgartirish
-        run: cp build/app/outputs/flutter-apk/app-release.apk Bozor.apk
+      - name: APK nomlarini o'zgartirish
+        run: |
+          OUT=build/app/outputs/flutter-apk
+          cp $OUT/app-arm64-v8a-release.apk Bozor.apk
+          cp $OUT/app-armeabi-v7a-release.apk Bozor-eski-telefonlar.apk
+          cp $OUT/app-release.apk Bozor-universal.apk
+          ls -la *.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: Bozor-apk
-          path: Bozor.apk
+          path: "*.apk"
 
       - name: Releases bo'limiga joylash
         if: github.event_name == 'push'
@@ -54,7 +61,14 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: Bozor v1.0.${{ github.run_number }}
-          files: Bozor.apk
+          files: |
+            Bozor.apk
+            Bozor-eski-telefonlar.apk
+            Bozor-universal.apk
           body: |
-            Android uchun o'rnatish fayli.
-            Telefonda **Bozor.apk** ni yuklab oling va oching. Telefon «noma'lum manbadan o'rnatish»ga ruxsat so'rasa, ruxsat bering.
+            Android uchun o'rnatish fayllari:
+            - **Bozor.apk** — 2017-yildan keyin chiqqan deyarli barcha telefonlar uchun (eng kichik fayl, shuni yuklang)
+            - **Bozor-eski-telefonlar.apk** — Bozor.apk o'rnatilmasa, eski telefonlar uchun
+            - **Bozor-universal.apk** — har qanday telefonga mos, lekin katta
+
+            Faylni oching. Telefon «noma'lum manbadan o'rnatish»ga ruxsat so'rasa, ruxsat bering.
