@@ -1,0 +1,60 @@
+name: APK yasash
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Android fayllarini yaratish
+        run: |
+          if [ ! -d android ]; then
+            flutter create . --project-name online_shop --org uz.bozor --platforms android
+          fi
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          # Ilova nomi telefonda «Bozor» bo'lib ko'rinadi
+          sed -i 's/android:label="[^"]*"/android:label="Bozor"/' "$MANIFEST"
+          if ! grep -q 'android.permission.INTERNET' "$MANIFEST"; then
+            sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application|' "$MANIFEST"
+          fi
+
+      - run: flutter pub get
+      - run: flutter test
+      - run: flutter build apk --release
+
+      - name: APK nomini o'zgartirish
+        run: cp build/app/outputs/flutter-apk/app-release.apk Bozor.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bozor-apk
+          path: Bozor.apk
+
+      - name: Releases bo'limiga joylash
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Bozor v1.0.${{ github.run_number }}
+          files: Bozor.apk
+          body: |
+            Android uchun o'rnatish fayli.
+            Telefonda **Bozor.apk** ni yuklab oling va oching. Telefon «noma'lum manbadan o'rnatish»ga ruxsat so'rasa, ruxsat bering.

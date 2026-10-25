@@ -1,0 +1,17 @@
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+.idea/
+*.iml
+.metadata
+
+# Platforma papkalari GitHub Actions'da `flutter create` bilan yaratiladi
+/android/
+/ios/
+/web/
+/linux/
+/macos/
+/windows/
