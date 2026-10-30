@@ -32,3 +32,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: build/web
+
+      # Vercel saytning ildizidan ochiladi, shuning uchun alohida tarmoqqa joylanadi
+      - name: Vercel uchun nusxa tayyorlash
+        run: |
+          sed -i 's|<base href="/onlineshop/">|<base href="/">|' build/web/index.html
+          echo '{"cleanUrls":false,"framework":null,"buildCommand":"","installCommand":"","outputDirectory":"."}' > build/web/vercel.json
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/web
+          publish_branch: vercel-site
