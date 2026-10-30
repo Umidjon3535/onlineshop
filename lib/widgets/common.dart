@@ -19,6 +19,10 @@ class ProductImage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (path.isEmpty) return _fallback(context, '', null);
     if (path.startsWith('assets/')) return Image.asset(path, fit: fit, errorBuilder: _fallback);
+    // Veb-versiyada admin qo'shgan rasm matn (data URI) ko'rinishida saqlanadi.
+    if (path.startsWith('data:')) {
+      return Image.memory(UriData.parse(path).contentAsBytes(), fit: fit, errorBuilder: _fallback);
+    }
     return Image.file(File(path), fit: fit, errorBuilder: _fallback);
   }
 }

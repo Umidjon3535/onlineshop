@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -90,8 +91,19 @@ class _ProductEditorState extends State<ProductEditor> {
   Future<void> _pickImage() async {
     setState(() => _picking = true);
     try {
-      final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1400, imageQuality: 85);
+      final file = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: kIsWeb ? 700 : 1400,
+        imageQuality: kIsWeb ? 70 : 85,
+      );
       if (file == null) return;
+      if (kIsWeb) {
+        // Brauzerda fayl tizimi yo'q, rasm mahsulot bilan birga saqlanadi.
+        final bytes = await file.readAsBytes();
+        final uri = UriData.fromBytes(bytes, mimeType: file.mimeType ?? 'image/jpeg').toString();
+        if (mounted) setState(() => _images.add(uri));
+        return;
+      }
       // Kesh tozalansa ham rasm yo'qolmasligi uchun ilova papkasiga ko'chiriladi.
       final dir = await getApplicationDocumentsDirectory();
       final dot = file.path.lastIndexOf('.');
